@@ -8,6 +8,8 @@ import PrimeVue from 'primevue/config'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
+import Splitter from 'primevue/splitter'
+import SplitterPanel from 'primevue/splitterpanel'
 
 const app = createApp(App)
 
@@ -15,5 +17,7 @@ app.use(PrimeVue)
 app.component('Button', Button)
 app.component('InputText', InputText)
 app.component('InputNumber', InputNumber)
+app.component('Splitter', Splitter)
+app.component('SplitterPanel', SplitterPanel)
 
 app.mount('#app')
