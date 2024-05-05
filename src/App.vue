@@ -3,7 +3,8 @@
     <SpeedDial v-if='loggedIn === true' :model='menuItems' direction='down' style='right: 1rem; top: 2rem;' />
     <Splitter v-if='loggedIn === true'>
       <SplitterPanel :size='25' :minSize='10'>
-        <Listbox v-model='selectedDialog' :options='dialogs' optionLabel='name' class='w-full' listStyle='height:100vh'>
+        <Listbox :modelValue='dialogSelected' :options='dialogs' @change='selectDialog' class='w-full'
+          listStyle='height:100vh'>
           <template #option='slotProps'>
             <div class='flex align-items-center h-5rem'>
               <img src='' class='mr-2' style='width: 18px' />
@@ -30,7 +31,7 @@
 
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { TelegramClient, Api } from 'telegram'
 import { StringSession } from 'telegram/sessions'
 
@@ -43,7 +44,8 @@ const code = ref()
 const loggedIn = ref()
 const user = ref()
 const dialogs = ref([])
-const selectedDialog = ref()
+const dialogSelected = ref()
+const messages = ref([])
 
 onMounted(async () => {
   await client.connect()
@@ -53,6 +55,18 @@ onMounted(async () => {
     loggedIn.value = false
   }
 })
+
+async function selectDialog({ value: dialog }) {
+  if (dialog) {
+    dialogSelected.value = dialog
+    getDialogMessages(dialog)
+  }
+}
+
+async function getDialogMessages(dialog) {
+  messages.value = await client.getMessages(dialog.entity, { limit: 99999 })
+  console.log('messages', messages.value)
+}
 
 async function sendCode() {
   await client.sendCode(authCredentials, phone.value)
