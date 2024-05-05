@@ -10,7 +10,7 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import SpeedDial from 'primevue/speeddial'
+import Menubar from 'primevue/menubar'
 import Listbox from 'primevue/listbox'
 
 const app = createApp(App)
@@ -21,7 +21,7 @@ app.component('InputText', InputText)
 app.component('InputNumber', InputNumber)
 app.component('Splitter', Splitter)
 app.component('SplitterPanel', SplitterPanel)
-app.component('SpeedDial', SpeedDial)
+app.component('Menubar', Menubar)
 app.component('Listbox', Listbox)
 
 app.mount('#app')

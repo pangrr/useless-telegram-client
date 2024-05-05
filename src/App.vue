@@ -1,10 +1,10 @@
 <template>
-  <div style='height: 100vh; width: 100vw;'>
-    <SpeedDial v-if='loggedIn === true' :model='menuItems' direction='down' style='right: 1rem; top: 2rem;' />
-    <Splitter v-if='loggedIn === true'>
-      <SplitterPanel :size='25' :minSize='10'>
-        <Listbox :modelValue='dialogSelected' :options='dialogs' @change='selectDialog' class='w-full'
-          listStyle='height:100vh'>
+  <div style='height: 100vh; width: 100vw; position: fixed;' class='flex flex-column'>
+    <Menubar :model="menuItems" />
+    <Splitter v-if='loggedIn === true' :gutterSize='1'>
+      <SplitterPanel :size='25' :minSize='20'>
+        <Listbox :modelValue='dialogSelected' :options='dialogs' @change='selectDialog'
+          listStyle='height:calc(100vh - 50px)'>
           <template #option='slotProps'>
             <div class='flex align-items-center h-5rem'>
               <img src='' class='mr-2' style='width: 18px' />
@@ -13,14 +13,20 @@
           </template>
         </Listbox>
       </SplitterPanel>
-      <SplitterPanel class='flex align-items-center justify-content-center' :size='75'>
-        <Listbox v-model='messageSelected' :options='messages' multiple class='w-full' listStyle='height:100vh'>
+      <SplitterPanel class='flex flex-column' :size='75' :minSize='40'>
+        <Listbox v-model='messagesSelected' :options='messages' multiple listStyle='height:calc(100vh - 100px)'>
           <template #option='slotProps'>
-            <div :class="`flex justify-content-${slotProps.option.out ? 'end' : 'start'} h-5rem`">
-              <div>{{ slotProps.option.message }}</div>
+            <div :class="`flex justify-content-${slotProps.option.out ? 'end' : 'start'}`" style='min-height: 2rem;'>
+              <div v-if='!slotProps.option.out'>{{ getParticipantName(slotProps.option.fromId?.userId, participants) }}:
+              </div>
+              <div style='max-width: 50%;'>{{ slotProps.option.message }}</div>
             </div>
           </template>
         </Listbox>
+        <div class='flex' style='width: 98%;'>
+          <InputText type="text" v-model='inputMessage' style="flex-grow: 1" />
+          <Button @click='sendMessage'>Send</Button>
+        </div>
       </SplitterPanel>
     </Splitter>
     <div v-else-if='loggedIn === false' style='height: 100vh; width: 100vw;'
@@ -54,7 +60,9 @@ const user = ref()
 const dialogs = ref([])
 const dialogSelected = ref()
 const messages = ref([])
-const messageSelected = ref([])
+const messagesSelected = ref([])
+const inputMessage = ref('')
+const participants = ref([])
 
 onMounted(async () => {
   await client.connect()
@@ -65,16 +73,35 @@ onMounted(async () => {
   }
 })
 
+async function sendMessage() {
+  if (inputMessage.value.length > 0) {
+    client.sendMessage(dialogSelected.value.entity, { message: inputMessage.value })
+    inputMessage.value = ''
+  }
+}
+
+function getParticipantName(userId, participants) {
+  const user = participants.find(user => user.id.value === userId?.value)
+  return `${user?.firstName} ${user?.lastName}`
+}
+
 async function selectDialog({ value: dialog }) {
   if (dialog) {
     dialogSelected.value = dialog
     getDialogMessages(dialog)
+    getDialogParticipants(dialog)
   }
 }
 
+
 async function getDialogMessages(dialog) {
-  messages.value = await client.getMessages(dialog.entity, { limit: 99999 })
+  messages.value = (await client.getMessages(dialog.entity, { limit: 99999 })).reverse()
   console.log('messages', messages.value)
+}
+
+async function getDialogParticipants(dialog) {
+  participants.value = await client.getParticipants(dialog.entity)
+  console.log('participants', participants.value)
 }
 
 async function sendCode() {
