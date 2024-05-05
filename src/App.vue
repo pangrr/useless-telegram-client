@@ -13,7 +13,15 @@
           </template>
         </Listbox>
       </SplitterPanel>
-      <SplitterPanel class='flex align-items-center justify-content-center' :size='75'> Panel 2 </SplitterPanel>
+      <SplitterPanel class='flex align-items-center justify-content-center' :size='75'>
+        <Listbox v-model='messageSelected' :options='messages' multiple class='w-full' listStyle='height:100vh'>
+          <template #option='slotProps'>
+            <div :class="`flex justify-content-${slotProps.option.out ? 'end' : 'start'} h-5rem`">
+              <div>{{ slotProps.option.message }}</div>
+            </div>
+          </template>
+        </Listbox>
+      </SplitterPanel>
     </Splitter>
     <div v-else-if='loggedIn === false' style='height: 100vh; width: 100vw;'
       class='flex justify-content-center flex-grow-1'>
@@ -46,6 +54,7 @@ const user = ref()
 const dialogs = ref([])
 const dialogSelected = ref()
 const messages = ref([])
+const messageSelected = ref([])
 
 onMounted(async () => {
   await client.connect()
