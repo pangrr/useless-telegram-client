@@ -12,6 +12,7 @@ import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import Menubar from 'primevue/menubar'
 import Listbox from 'primevue/listbox'
+import Card from 'primevue/card'
 
 const app = createApp(App)
 
@@ -23,5 +24,6 @@ app.component('Splitter', Splitter)
 app.component('SplitterPanel', SplitterPanel)
 app.component('Menubar', Menubar)
 app.component('Listbox', Listbox)
+app.component('Card', Card)
 
 app.mount('#app')
