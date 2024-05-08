@@ -21,10 +21,10 @@
 							</n-el>
 						</n-flex>
 					</div>
-					<n-flex justify='center' style='margin: 0.5rem;'>
-						<n-input v-model:value='d.inputMessage' placeholder='Message' type="textarea"
-							:autosize='{ minRows: 1, maxRows: 5 }' style='flex-basis: 80%'></n-input>
-						<n-button>Send</n-button>
+					<n-flex justify='center' style='margin-top: 0.5rem;margin-bottom: 1rem;'>
+						<n-input v-model:value='d.inputMessage' @keydown.meta.enter='sendMessage(d)' placeholder='Message'
+							type="textarea" :autosize='{ minRows: 1, maxRows: 5 }' style='flex-basis: 80%'></n-input>
+						<n-button @click='sendMessage(d)' tertiary type='primary' :disabled='!d.inputMessage.length'>Send</n-button>
 					</n-flex>
 				</n-flex>
 			</n-tab-pane>
@@ -54,37 +54,25 @@ const messageListRefs = ref([])
 
 onMounted(async () => {
 	user.value = await client.getMe()
-	console.log('user', user.value)
 	dialogs.value = await getDialogs()
 	await selectDialog(dialogs.value[0].id.toString())
-	console.log('dialogs', dialogs.value)
 
-	client.addEventHandler((e) => console.log(e), new NewMessage({}))
+	client.addEventHandler(onMessageReceived, new NewMessage({}))
 })
 
-async function getDialogs() {
-	return await client.getDialogs()
-}
-
-function formatMessageTime(timestamp) {
-	const then = dayjs.unix(timestamp)
-	const now = dayjs()
-	if (now.diff(then, 'day') < 1) return then.format('HH:mm')
-	else if (now.diff(then, 'year') < 1) return then.format('MM-DD HH:mm')
-	else return then.format('YYYY-MM-DD HH:mm')
-}
-
-async function sendMessage() {
-	if (inputMessage.value.length > 0) {
-		client.sendMessage(dialog.value.entity, { message: inputMessage.value })
-		inputMessage.value = ''
+async function onMessageReceived(e) {
+	const dialog = whichDialogForMessage(e.message)
+	if (dialog) {
+		dialog.messages.push(e.message)
+		await scrollToLastMessage(dialog.id.toString())
 	}
 }
 
-function getMessageSenderName(message, dialog) {
-	const user = dialog.participants.find(user => user.id.value === message.fromId?.userId.value)
-	if (user) return `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}`
-	else return ''
+function whichDialogForMessage(message) {
+	const userId = message.peerId.userId?.toString()
+	const chatId = message.peerId.chatId?.toString()
+	if (userId) return dialogs.value.find(d => d.isUser && d.id.toString() === userId)
+	else if (chatId) return dialogs.value.find(d => (d.isGroup || d.isChannel) && d.id.toString() === ('-' + chatId))
 }
 
 async function selectDialog(idStr) {
@@ -99,6 +87,24 @@ async function selectDialog(idStr) {
 		await scrollToLastMessage(idStr)
 		loadingBar.finish()
 	}
+	console.log(dialog)
+}
+
+async function getDialogs() {
+	return await client.getDialogs()
+}
+
+async function sendMessage(dialog) {
+	const messageSent = await client.sendMessage(dialog.entity, { message: dialog.inputMessage })
+	dialog.messages.push(messageSent)
+	dialog.inputMessage = ''
+	await scrollToLastMessage(dialog.id.toString())
+}
+
+function getMessageSenderName(message, dialog) {
+	const user = dialog.participants.find(user => user.id.value === message.fromId?.userId.value)
+	if (user) return `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}`
+	else return ''
 }
 
 async function scrollToLastMessage(dialogIdStr) {
@@ -120,6 +126,14 @@ function logout() {
 	localStorage.removeItem('session')
 	user.value = null
 	emit('loggedOut')
+}
+
+function formatMessageTime(timestamp) {
+	const then = dayjs.unix(timestamp)
+	const now = dayjs()
+	if (now.diff(then, 'day') < 1) return then.format('HH:mm')
+	else if (now.diff(then, 'year') < 1) return then.format('MM-DD HH:mm')
+	else return then.format('YYYY-MM-DD HH:mm')
 }
 </script>
 
