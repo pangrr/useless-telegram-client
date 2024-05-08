@@ -3,9 +3,7 @@
 		<n-flex vertical justify='center' style='height: 100vh;'>
 			<n-input-group>
 				<n-input v-model:value='phoneNumber' type='text' placeholder='Phone Number' />
-				<n-spin :show='disableSendCode' size='small'>
-					<n-button @click='sendCode' :disabled='disableSendCode'>Send Code</n-button>
-				</n-spin>
+				<n-button @click='sendCode' :loading='disableSendCode'>Send Code</n-button>
 			</n-input-group>
 			<n-input-group>
 				<n-input v-model:value='phoneCode' type='text' placeholder='Code' />
@@ -18,9 +16,6 @@
 
 <script setup>
 import { ref } from 'vue'
-import { TelegramClient } from 'telegram'
-import { StringSession } from 'telegram/sessions'
-import { NewMessage } from 'telegram/events'
 import { useMessage } from 'naive-ui'
 
 const message = useMessage()

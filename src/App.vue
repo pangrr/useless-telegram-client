@@ -2,10 +2,12 @@
   <n-config-provider :theme='darkTheme'>
     <n-global-style />
     <n-message-provider>
-      <login v-if='loggedIn === false' :client='client' :auth-credentials='authCredentials'
-        @logged-in='loggedIn = true' />
-      <chat v-else-if='loggedIn === true' :client='client' @logged-out='loggedIn = false' />
-      <loading v-else />
+      <n-loading-bar-provider>
+        <login v-if='loggedIn === false' :client='client' :auth-credentials='authCredentials'
+          @logged-in='loggedIn = true' />
+        <chat v-else-if='loggedIn === true' :client='client' @logged-out='loggedIn = false' />
+        <loading v-else />
+      </n-loading-bar-provider>
     </n-message-provider>
   </n-config-provider>
 </template>

@@ -7,17 +7,23 @@
 			style='height: calc(100vh - 2.2rem);'>
 			<n-tab-pane v-for='d in dialogs' :key='d.id.value.toString()' :name='d.id.toString()' :tab='d.name'
 				display-directive='show'>
-				<n-flex vertical style='height: 100%;'>
+				<n-flex v-if='d.messages' vertical style='height: 100%;'>
 					<div :id='d.id.value.toString()' ref='messageListRefs' style='flex-grow: 1;overflow-y: scroll;'>
-						<n-flex v-for='m in d.messages' :justify='m.out ? "end" : "start"' style='padding: 0.3rem;'>
-							<div style='max-width: 30%;'>
-								<div v-if='m.senderName'>{{ m.senderName }}</div>
-								<div>{{ m.message }}</div>
-							</div>
+						<n-flex v-for='m in d.messages' :justify='m.out ? "end" : "start"' style='padding: 0.3rem 1rem;'>
+							<n-el style='max-width: 70%;padding: 0.5rem;border-radius: 10px;'
+								:style='{ background: m.out ? "var(--primary-color-suppl)" : "var(--input-color)" }'>
+								<n-text v-if='!m.out && m.senderName' type='success' style='font-size: 0.7rem;'>{{ m.senderName
+									}}</n-text>
+								<n-flex align='end'>
+									<n-text depth='1'>{{ m.message }}</n-text>
+									<n-text depth='3' style='font-size: 0.6rem;'>{{ formatMessageTime(m.date) }}</n-text>
+								</n-flex>
+							</n-el>
 						</n-flex>
 					</div>
 					<n-flex justify='center' style='margin-bottom: 0.5rem;'>
-						<n-input style='flex-basis: 80%'></n-input>
+						<n-input v-model:value='d.inputMessage' placeholder='Message' type="textarea"
+							:autosize='{ minRows: 1, maxRows: 5 }' style='flex-basis: 80%'></n-input>
 						<n-button>Send</n-button>
 					</n-flex>
 				</n-flex>
@@ -28,14 +34,14 @@
 
 
 <script setup>
-import { onMounted, ref, watch, nextTick } from 'vue'
-import { TelegramClient, Api } from 'telegram'
-import { StringSession } from 'telegram/sessions'
+import { onMounted, ref, nextTick } from 'vue'
 import { NewMessage } from 'telegram/events'
-import { darkTheme, useMessage } from 'naive-ui'
-import { M } from 'vite/dist/node/types.d-aGj9QkWt'
+import { useMessage, useLoadingBar } from 'naive-ui'
+import dayjs from 'dayjs'
+
 
 const message = useMessage()
+const loadingBar = useLoadingBar()
 
 const props = defineProps(['client'])
 const { client } = props
@@ -60,6 +66,14 @@ async function getDialogs() {
 	return await client.getDialogs()
 }
 
+function formatMessageTime(timestamp) {
+	const then = dayjs.unix(timestamp)
+	const now = dayjs()
+	if (now.diff(then, 'day') < 1) return then.format('HH:mm')
+	else if (now.diff(then, 'year') < 1) return then.format('MM-DD HH:mm')
+	else return then.format('YYYY-MM-DD HH:mm')
+}
+
 async function sendMessage() {
 	if (inputMessage.value.length > 0) {
 		client.sendMessage(dialog.value.entity, { message: inputMessage.value })
@@ -77,22 +91,25 @@ async function selectDialog(idStr) {
 	selectedDialogIdStr.value = idStr
 	const dialog = dialogs.value.find(d => d.id.toString() === idStr)
 	if (!dialog.messages) {
-		dialog.messages = await getDialogMessages(dialog)
-		dialog.participants = await getDialogParticipants(dialog)
-		dialog.messages.forEach(m => m.senderName = getMessageSenderName(m, dialog))
+		loadingBar.start()
 		dialog.inputMessage = ''
+		dialog.participants = await getDialogParticipants(dialog)
+		dialog.messages = await getDialogMessages(dialog)
+		dialog.messages.forEach(m => m.senderName = getMessageSenderName(m, dialog))
 		await scrollToLastMessage(idStr)
+		loadingBar.finish()
 	}
 }
 
 async function scrollToLastMessage(dialogIdStr) {
+	// Ensure scroll target element is updated before scrolling.
 	await nextTick()
 	const mListEl = messageListRefs.value.find(r => r.id === dialogIdStr)
 	mListEl.scrollTo({ top: mListEl.scrollHeight, behavior: 'instant' })
 }
 
 async function getDialogMessages(dialog) {
-	return (await client.getMessages(dialog.entity, { limit: 500 })).reverse()
+	return (await client.getMessages(dialog.entity, { limit: 500 })).filter(m => m.message).reverse()
 }
 
 async function getDialogParticipants(dialog) {
