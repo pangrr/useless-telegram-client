@@ -17,7 +17,7 @@
 
 
 <script setup>
-import { defineProps, defineEmits, ref } from 'vue'
+import { ref } from 'vue'
 import { TelegramClient } from 'telegram'
 import { StringSession } from 'telegram/sessions'
 import { NewMessage } from 'telegram/events'

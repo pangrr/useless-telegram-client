@@ -1,22 +1,22 @@
 <template>
-	<div style='height: 100vh;width: 100vw;position: fixed;'>
-		<n-flex justify='end' style='height: 2rem;'>
+	<div vertical style='height: 100vh;width: 100vw;position: fixed;'>
+		<n-flex justify='end' style='height: 2.2rem;'>
 			<n-button quaternary @click='logout'>Logout</n-button>
 		</n-flex>
 		<n-tabs :value='selectedDialogIdStr' :on-update:value='selectDialog' size='large' type='line' placement='left'
-			style='height: calc(100vh - 2rem);'>
+			style='height: calc(100vh - 2.2rem);'>
 			<n-tab-pane v-for='d in dialogs' :key='d.id.value.toString()' :name='d.id.toString()' :tab='d.name'
 				display-directive='show'>
 				<n-flex vertical style='height: 100%;'>
 					<div :id='d.id.value.toString()' ref='messageListRefs' style='flex-grow: 1;overflow-y: scroll;'>
-						<n-card v-for='m in d.messages'>
-							<!-- {{ getMessageSenderName(m, d) }} -->
-							<template #footer>
-								{{ m.message }}
-							</template>
-						</n-card>
+						<n-flex v-for='m in d.messages' :justify='m.out ? "end" : "start"' style='padding: 0.3rem;'>
+							<div style='max-width: 30%;'>
+								<div v-if='m.senderName'>{{ m.senderName }}</div>
+								<div>{{ m.message }}</div>
+							</div>
+						</n-flex>
 					</div>
-					<n-flex justify='center' style='margin-bottom: 1rem;'>
+					<n-flex justify='center' style='margin-bottom: 0.5rem;'>
 						<n-input style='flex-basis: 80%'></n-input>
 						<n-button>Send</n-button>
 					</n-flex>
@@ -28,11 +28,12 @@
 
 
 <script setup>
-import { defineProps, defineEmits, onMounted, ref, watch, nextTick } from 'vue'
+import { onMounted, ref, watch, nextTick } from 'vue'
 import { TelegramClient, Api } from 'telegram'
 import { StringSession } from 'telegram/sessions'
 import { NewMessage } from 'telegram/events'
 import { darkTheme, useMessage } from 'naive-ui'
+import { M } from 'vite/dist/node/types.d-aGj9QkWt'
 
 const message = useMessage()
 
@@ -78,6 +79,7 @@ async function selectDialog(idStr) {
 	if (!dialog.messages) {
 		dialog.messages = await getDialogMessages(dialog)
 		dialog.participants = await getDialogParticipants(dialog)
+		dialog.messages.forEach(m => m.senderName = getMessageSenderName(m, dialog))
 		dialog.inputMessage = ''
 		await scrollToLastMessage(idStr)
 	}
