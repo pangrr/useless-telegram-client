@@ -21,7 +21,7 @@
 							</n-el>
 						</n-flex>
 					</div>
-					<n-flex justify='center' style='margin-bottom: 0.5rem;'>
+					<n-flex justify='center' style='margin: 0.5rem;'>
 						<n-input v-model:value='d.inputMessage' placeholder='Message' type="textarea"
 							:autosize='{ minRows: 1, maxRows: 5 }' style='flex-basis: 80%'></n-input>
 						<n-button>Send</n-button>
