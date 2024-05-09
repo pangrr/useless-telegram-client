@@ -8,7 +8,8 @@
 			<n-tab-pane v-for='d in dialogs' :key='d.id.value.toString()' :name='d.id.toString()' :tab='d.name'
 				display-directive='show'>
 				<n-flex v-if='d.messages' vertical style='height: 100%;'>
-					<div :id='d.id.value.toString()' ref='messageListRefs' style='flex-grow: 1;overflow-y: scroll;'>
+					<div style='flex-grow: 1;'></div> <!-- push message down when not enough messages to fill the view height -->
+					<div :id='d.id.value.toString()' ref='messageListRefs' style='overflow-y: scroll;'>
 						<n-flex v-for='m in d.messages' :justify='m.out ? "end" : "start"' style='padding: 0.3rem 1rem;'>
 							<n-el style='max-width: 70%;padding: 0.5rem;border-radius: 10px;'
 								:style='{ background: m.out ? "var(--primary-color-suppl)" : "var(--input-color)" }'>
@@ -22,7 +23,7 @@
 						</n-flex>
 					</div>
 					<n-flex justify='center' style='margin-top: 0.5rem;margin-bottom: 1rem;'>
-						<n-input v-model:value='d.inputMessage' @keydown.meta.enter='sendMessage(d)' placeholder='Message'
+						<n-input v-model:value='d.inputMessage' @keydown.enter.prevent='sendMessage(d)' placeholder='Message'
 							type="textarea" :autosize='{ minRows: 1, maxRows: 5 }' style='flex-basis: 80%'></n-input>
 						<n-button @click='sendMessage(d)' tertiary type='primary' :disabled='!d.inputMessage.length'>Send</n-button>
 					</n-flex>
