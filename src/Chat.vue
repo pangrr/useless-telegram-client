@@ -87,7 +87,6 @@ async function selectDialog(idStr) {
 		await scrollToLastMessage(idStr)
 		loadingBar.finish()
 	}
-	console.log(dialog)
 }
 
 async function getDialogs() {

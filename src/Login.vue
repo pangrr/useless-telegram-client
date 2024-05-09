@@ -1,6 +1,7 @@
 <template>
 	<n-flex justify='center'>
 		<n-flex vertical justify='center' style='height: 100vh;'>
+			<n-alert type='success' :bordered='false' :show-icon='false'>Use your Telegram phone number to login</n-alert>
 			<n-input-group>
 				<n-input v-model:value='phoneNumber' type='text' placeholder='Phone Number' />
 				<n-button @click='sendCode' :loading='disableSendCode'>Send Code</n-button>
