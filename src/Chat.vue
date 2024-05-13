@@ -1,8 +1,5 @@
 <template>
-	<div vertical style='height: 100vh;width: 100vw;position: fixed;'>
-		<n-flex justify='end' style='height: 2.2rem;'>
-			<n-button quaternary @click='logout'>Logout</n-button>
-		</n-flex>
+	<div style='height: calc(100vh - 2.2rem);'>
 		<n-tabs :value='selectedDialogIdStr' :on-update:value='selectDialog' size='large' type='line' placement='left'
 			style='height: calc(100vh - 2.2rem);'>
 			<n-tab-pane v-for='d in dialogs' :key='d.id.value.toString()' :name='d.id.toString()' :tab='d.name'
@@ -44,17 +41,14 @@ import dayjs from 'dayjs'
 const message = useMessage()
 const loadingBar = useLoadingBar()
 
-const props = defineProps(['client'])
-const { client } = props
-const emit = defineEmits(['loggedOut'])
+const props = defineProps(['client', 'user'])
+const { client, user } = props
 
-const user = ref()
 const dialogs = ref([])
 const selectedDialogIdStr = ref('')
 const messageListRefs = ref([])
 
 onMounted(async () => {
-	user.value = await client.getMe()
 	dialogs.value = await getDialogs()
 	await selectDialog(dialogs.value[0].id.toString())
 
@@ -63,7 +57,7 @@ onMounted(async () => {
 
 async function onMessageReceived(e) {
 	const dialog = whichDialogForMessage(e.message)
-	if (dialog) {
+	if (dialog && dialog.messages) {
 		dialog.messages.push(e.message)
 		await scrollToLastMessage(dialog.id.toString())
 	}
@@ -120,12 +114,6 @@ async function getDialogMessages(dialog) {
 
 async function getDialogParticipants(dialog) {
 	return await client.getParticipants(dialog.entity)
-}
-
-function logout() {
-	localStorage.removeItem('session')
-	user.value = null
-	emit('loggedOut')
 }
 
 function formatMessageTime(timestamp) {

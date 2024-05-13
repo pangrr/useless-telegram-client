@@ -1,6 +1,6 @@
 <template>
 	<n-flex justify='center'>
-		<n-flex vertical justify='center' style='height: 100vh;'>
+		<n-flex vertical justify='center' style='height: calc(100vh - 2.2rem);'>
 			<n-alert type='success' :bordered='false' :show-icon='false'>Use your Telegram phone number to login</n-alert>
 			<n-input-group>
 				<n-input v-model:value='phoneNumber' type='text' placeholder='Phone Number' />
