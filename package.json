@@ -1,8 +1,7 @@
 {
-  "name": "chat",
+  "name": "useless-telegram-client",
   "version": "0.0.0",
   "private": true,
-  "homepage": "https://pangrr.github.io/chat/",
   "type": "module",
   "scripts": {
     "dev": "vite",
