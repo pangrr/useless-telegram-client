@@ -1,4 +1,6 @@
-# telegram web frontend, can login your account
+# use your telegram account on the web
+
+https://pangrr.github.io/useless-telegram-client/
 
 ## run local
 
