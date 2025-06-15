@@ -58,7 +58,7 @@ function logout() {
 }
 
 function openSourceCode() {
-  window.open("https://github.com/pangrr/chat", "_blank")
+  window.open("https://github.com/pangrr/useless-video-call", "_blank")
 }
 
 </script>
