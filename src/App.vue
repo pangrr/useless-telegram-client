@@ -74,7 +74,7 @@ function logout() {
 }
 
 function openSourceCode() {
-  window.open("https://github.com/pangrr/useless-video-call", "_blank")
+  window.open("https://github.com/pangrr/useless-telegram-client", "_blank")
 }
 </script>
 
