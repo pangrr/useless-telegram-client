@@ -1,0 +1,27 @@
+diff --git a/node_modules/telegram/client/auth.js b/node_modules/telegram/client/auth.js
+index 873f81d..6761481 100644
+--- a/node_modules/telegram/client/auth.js
++++ b/node_modules/telegram/client/auth.js
+@@ -176,7 +176,21 @@ async function signInUser(client, apiCredentials, authParams) {
+     await authParams.onError(new Error("Auth failed"));
+     return client.signInUser(apiCredentials, authParams);
+ }
+-exports.signInUser = signInUser;
++// Ran Pang: simplify signInUse for browser use
++// exports.signInUser = signInUser
++exports.signInUser = async (client, apiCredentials, authParams) => {
++    const phoneNumber = authParams.phoneNumber;
++	const sendCodeResult = await client.sendCode(apiCredentials, phoneNumber, authParams.forceSMS);
++	const phoneCodeHash = sendCodeResult.phoneCodeHash;
++	
++	const phoneCode = authParams.phoneCode;
++	const result = await client.invoke(new tl_1.Api.auth.SignIn({
++			phoneNumber,
++			phoneCodeHash,
++			phoneCode,
++	}));
++	return result.user;
++};
+ /** @hidden */
+ async function signInUserWithQrCode(client, apiCredentials, authParams) {
+     let isScanningComplete = false;
